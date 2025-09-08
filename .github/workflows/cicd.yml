@@ -1,15 +1,17 @@
 name: Build
 
 on:
-
   push:
     paths-ignore:
       - "docs/**"
       - "**.md"
       - "LICENSE"
-
   pull_request:
     branches: [ main ]
+
+permissions:
+  contents: write
+  packages: write
 
 env:
   CARGO_TERM_COLOR: always

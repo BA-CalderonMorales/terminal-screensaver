@@ -54,7 +54,13 @@ When working on this project:
 
 ## Agent Guidelines
 
+### Core Development Rules
+
+- **VERIFY BEFORE ASSUMING**: Always check actual test results, error messages, and pipeline outputs before proposing solutions. Never assume fixes will work without validation.
+- **USE EVIDENCE-BASED DEBUGGING**: Utilize tools like `gh cli` to inspect actual workflow runs, error logs, and system states rather than making theoretical assumptions.
+- **CHECK PERMISSIONS AND CONFIGURATION**: Validate that all required permissions, tokens, and configurations are properly set before assuming functionality will work.
 - **NO EMOJIS** in any documentation or code comments
+- **Evidence-Based Solutions**: Base all recommendations on actual observed behavior, not theoretical assumptions
 - Follow Rust naming conventions and idioms
 - Maintain the established directory structure
 - Keep logging centralized in `src/logger/`

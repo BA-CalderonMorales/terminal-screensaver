@@ -4,7 +4,7 @@
 
 This project is a terminal screensaver application built in Rust. For comprehensive information about the project's architecture, agents, and development guidelines, please refer to our main agent documentation:
 
-**📋 [AGENTS.md](../AGENTS.md)**
+**[AGENTS.md](../AGENTS.md)**
 
 The `AGENTS.md` file contains:
 - Project overview and objectives
@@ -14,6 +14,7 @@ The `AGENTS.md` file contains:
 - Testing strategies and guidelines
 - Security considerations
 - Documentation standards
+- Core development rules including evidence-based verification
 
 When providing assistance with this codebase, please consider the guidelines and patterns established in the `AGENTS.md` file to ensure consistency with the project's established practices.
 
