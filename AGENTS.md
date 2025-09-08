@@ -28,11 +28,12 @@ The Terminal Screensaver project is a Rust-based cargo package designed to provi
 
 ## Key Dependencies
 
-- **crossterm**: Cross-platform terminal manipulation
-- **ratatui**: Terminal UI framework for dynamic layouts
-- **serde/toml**: Configuration file parsing
-- **log/simplelog**: Structured logging infrastructure
-- **clap**: Command-line argument parsing
+- **crossterm**: Cross-platform terminal manipulation library
+- **serde**: Serialization framework with derive features for configuration parsing
+- **toml**: TOML configuration file format parsing
+- **log**: Logging facade for structured logging
+- **simplelog**: Simple logger implementation for log output
+- **clap**: Command-line argument parsing and CLI interface generation
 
 ## Security Considerations
 

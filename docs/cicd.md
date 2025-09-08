@@ -16,19 +16,26 @@ scripts/cicd/
 ```
 
 ### GitHub Actions Integration
-Our `.github/workflows/ci.yml` implements a streamlined pipeline based on the `local-ci.sh` script:
+Our `.github/workflows/cicd.yml` implements a comprehensive pipeline with optimized job dependencies:
 
 ```
 cargo_check (base compilation check)
 ├── local_ci (runs our local-ci.sh script)
-├── rustfmt (formatting check) 
+├── rustfmt (formatting check)
 ├── clippy (linting)
-└── test (cross-platform testing)
-    └── github_build (release builds, only on tags)
-        └── github_release (create releases)
-
-cargo_audit (runs independently for security)
+└── cargo_audit (security audit) 
+    └── test (cross-platform testing, depends on audit)
+        └── github_build (release builds, only on tags)
+            └── github_release (GitHub release creation)
+            └── cargo_publish (crates.io publishing)
 ```
+
+**Pipeline Features:**
+- **Early Failure Detection**: Security audit runs before expensive cross-platform testing
+- **Local Script Integration**: Primary CI job leverages `local-ci.sh` for consistency
+- **Multi-Platform Testing**: Ubuntu, Windows, and macOS validation
+- **Automated Releases**: Tag-triggered builds for multiple architectures
+- **Security-First**: Cargo audit with vulnerability reporting
 
 ### Local Development Pipeline
 The foundation of our CI/CD strategy begins with local development tooling:
@@ -105,10 +112,99 @@ graph TD
 
 ## GitHub Actions Workflows
 
-### Pull Request Workflow
-**File**: `.github/workflows/pr.yml`
+### CI/CD Pipeline Workflow
+**File**: `.github/workflows/cicd.yml`
 
-#### Matrix Strategy
+Our primary workflow provides comprehensive testing and automated release capabilities with the following job structure:
+
+#### Job Dependencies and Execution Flow
+```
+cargo_check (fast compilation check)
+    ├── local_ci (executes local-ci.sh script)
+    ├── rustfmt (code formatting validation)  
+    ├── clippy (static analysis linting)
+    └── cargo_audit (security vulnerability scan)
+        └── test (cross-platform testing matrix)
+            ├── github_build (multi-arch release builds, tags only)
+            │   └── github_release (GitHub release creation)
+            └── cargo_publish (crates.io publishing, tags only)
+```
+
+#### Workflow Triggers
+- **Push Events**: Main and develop branches (excluding docs and markdown)
+- **Pull Requests**: Targeting main branch
+- **Tag Events**: Version tags (v*) trigger release jobs
+
+#### Job Details
+
+**cargo_check**: Fast compilation verification
+- Runs on: `ubuntu-22.04`
+- Purpose: Quick feedback on basic compilation issues
+- Commands: `cargo check --all`
+
+**local_ci**: Local script integration
+- Runs on: `ubuntu-22.04`
+- Depends on: `cargo_check`
+- Purpose: Execute identical pipeline as local development
+- Features: Installs cargo-audit, runs `./scripts/cicd/local-ci.sh`
+- Artifacts: Security audit reports
+
+**rustfmt**: Code formatting validation
+- Runs on: `ubuntu-22.04` 
+- Depends on: `cargo_check`
+- Purpose: Enforce consistent code style
+- Commands: `cargo fmt --all -- --check`
+
+**clippy**: Static analysis linting
+- Runs on: `ubuntu-22.04`
+- Depends on: `cargo_check`
+- Purpose: Catch common mistakes and improve code quality
+- Commands: `cargo clippy --all-targets --all-features -- -D clippy::all`
+- Permissions: `checks: write` for PR annotations
+
+**cargo_audit**: Security vulnerability scanning
+- Runs on: `ubuntu-22.04`
+- Purpose: Identify known security vulnerabilities in dependencies
+- Uses: `actions-rust-lang/audit@v1`
+
+**test**: Cross-platform testing matrix
+- Depends on: `[cargo_check, rustfmt, clippy, cargo_audit]`
+- **Matrix Strategy**:
+  ```yaml
+  os: [ubuntu-22.04, windows-latest, macOS-latest]
+  rust: [stable]
+  ```
+- Purpose: Validate functionality across platforms
+- Commands: `cargo test`, `cargo run --release -- --help`
+
+**github_build**: Multi-architecture release builds
+- **Condition**: Only on version tags (`refs/tags/v*`)
+- Depends on: `test`
+- **Target Matrix**: 8 architectures including ARM64 and x86_64 variants
+- Features: Cross-compilation, binary stripping, artifact packaging
+- Artifacts: Platform-specific release binaries
+
+**github_release**: Automated GitHub releases  
+- **Condition**: Only on version tags
+- Depends on: `[test, github_build, cargo_audit]`
+- Features: Checksum generation, multi-platform binary uploads
+- Uses: `softprops/action-gh-release@v1`
+
+**cargo_publish**: Crates.io publishing
+- **Condition**: Only on version tags
+- Depends on: `[test, cargo_audit]`
+- Purpose: Automated package publishing to crates.io
+- Requires: `CRATES_IO_TOKEN` secret
+
+#### Required Secrets
+- `GITHUB_TOKEN`: Automatically provided by GitHub Actions
+- `CRATES_IO_TOKEN`: Required for crates.io publishing (obtain from crates.io account settings)
+
+#### Optimization Features
+- **Cargo Caching**: Registry and dependency caching for faster builds
+- **Early Failure**: Security audit blocks expensive cross-platform testing
+- **Parallel Execution**: Independent jobs run concurrently
+- **Conditional Releases**: Release jobs only execute on version tags
 ```yaml
 strategy:
   matrix:
