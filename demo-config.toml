@@ -16,3 +16,8 @@ command = "./scripts/demo/git-quick.sh"
 key = "h"
 description = "Help Information"
 command = "./scripts/demo/help.sh"
+
+[features.clock_display]
+enabled = true
+format = "24hour"
+show_seconds = true
