@@ -1,0 +1,18 @@
+text = "Professional Terminal Screensaver - Script Integration Demo"
+style = "default"
+
+# Script integration examples - focused on development workflow
+[[actions]]
+key = "d"
+description = "Development Environment Status"
+command = "./scripts/demo/dev-status.sh"
+
+[[actions]]
+key = "g"
+description = "Git Quick Actions"
+command = "./scripts/demo/git-quick.sh"
+
+[[actions]]
+key = "h"
+description = "Help Information"
+command = "./scripts/demo/help.sh"

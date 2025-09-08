@@ -1,0 +1,25 @@
+#!/bin/bash
+# Demo script: Development Environment Status
+
+echo "=== Development Environment Status ==="
+echo ""
+echo "Rust:"
+rustc --version 2>/dev/null || echo "Not installed"
+cargo --version 2>/dev/null || echo "Cargo not found"
+echo ""
+echo "Node.js:"
+node --version 2>/dev/null || echo "Not installed"
+npm --version 2>/dev/null || echo "NPM not found"
+echo ""
+echo "Python:"
+python --version 2>/dev/null || python3 --version 2>/dev/null || echo "Not installed"
+echo ""
+echo "Git Configuration:"
+echo "User: $(git config user.name 2>/dev/null || echo 'Not configured')"
+echo "Email: $(git config user.email 2>/dev/null || echo 'Not configured')"
+echo ""
+echo "Active Projects:"
+find ~/usr_repos -maxdepth 1 -type d -name "*" 2>/dev/null | head -5 || echo "No projects found"
+echo ""
+echo "Press any key to return..."
+read -n 1

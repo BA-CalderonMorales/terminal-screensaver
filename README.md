@@ -16,6 +16,7 @@ A dynamic terminal screen saver crate with plugin architecture that automaticall
 - **TOML Configuration**: Easy customization without code changes
 - **Cross-platform**: Works on Windows, Linux, and macOS
 - **Library & Binary**: Use as a library or standalone application
+- **Interactive Help Display**: Built-in help panel with keyboard shortcuts
 
 ## Built-in Screensaver Features
 
@@ -82,6 +83,39 @@ style = "default"
 [features.matrix_rain]
 enabled = true
 charset = "katakana"
+```
+
+### Script Integration
+
+For simple text display with script integration, use this configuration format:
+
+```toml
+text = "Professional Terminal Screensaver"
+style = "default"
+
+# Execute any script or command with custom keyboard shortcuts
+[[actions]]
+key = "d"
+description = "Development Status"
+command = "./scripts/dev-status.sh"
+
+[[actions]]
+key = "g"
+description = "Git Actions"
+command = "./scripts/git-quick.sh"
+
+[[actions]]
+key = "s"
+description = "System Info"
+command = "python3 -c 'import platform; print(platform.system()); input()'"
+```
+
+**Script Integration Features:**
+- Execute any script (Bash, Python, Node.js, etc.)
+- Custom keyboard shortcuts
+- Development workflow integration
+- Professional terminal handling
+- Extensible action system
 speed = 5
 
 [features.clock_display]
@@ -95,7 +129,8 @@ Available styles: `default`, `red`, `blue`, `green`
 ## Controls
 
 - **ESC**: Exit the screen saver
-- **Enter**: Trigger additional options (extensible)
+- **ENTER**: Trigger additional options (extensible)
+- **H**: Toggle help display panel
 
 ## Architecture
 
@@ -107,6 +142,61 @@ The project follows a screaming architecture with clear separation of concerns:
 - `src/shared/`: Shared utilities
 - `src/styles/`: UI styling system
 
+## Roadmap
+
+### v0.0.2 - Multi-Platform & Distribution (Planned)
+
+**Multi-Platform Build System**
+- Cross-compilation support for all major platforms
+- Automated build scripts for Windows, macOS (Intel & ARM), and Linux (x64 & ARM64)
+- Platform-specific optimizations and binary packaging
+- GitHub Actions integration for automated releases
+- Docker-based cross-compilation environments
+
+**Enhanced Distribution**
+- Pre-built binaries for all platforms
+- Package manager integration (Homebrew, Chocolatey, APT)
+- Installation scripts and platform-specific installers
+- Comprehensive platform testing and validation
+
+**Platform Features**
+- Native Windows console integration
+- macOS Terminal.app optimizations
+- Linux distribution compatibility testing
+- ARM64 performance optimizations
+
+### v0.0.3 - Advanced Features (Future)
+
+**Enhanced Screensavers**
+- Matrix rain animation restoration
+- Clock display with multiple time zones
+- Bouncing logo physics simulation
+- System resource monitoring displays
+- Wave animation with audio visualization
+- 3D starfield with configurable parameters
+
+**Plugin System**
+- Hot-reloadable plugin architecture
+- Custom animation framework
+- Theme engine with color customization
+- Performance monitoring and profiling tools
+- External API integration capabilities
+
+**Developer Experience**
+- VS Code extension for configuration editing
+- Live preview and testing tools
+- Documentation website with interactive examples
+- Community plugin marketplace
+- Comprehensive API documentation
+
+### Long-term Vision
+
+- Network-aware screensavers with remote data
+- AI-powered adaptive animations
+- Multi-monitor support and synchronization
+- Corporate deployment and management tools
+- Integration with terminal multiplexers (tmux, screen)
+
 ## License
 
-Licensed under either of Apache License, Version 2.0 or MIT license at your option.
+Licensed under MIT license.

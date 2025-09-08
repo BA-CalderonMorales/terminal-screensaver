@@ -11,6 +11,7 @@
 //! let config = Config {
 //!     text: "Welcome to My App".to_string(),
 //!     style: "default".to_string(),
+//!     actions: vec![],
 //! };
 //!
 //! // Config is available for use with screensaver features

@@ -66,14 +66,17 @@ impl SimpleRenderer {
                 stdout.queue(SetForegroundColor(color))?;
             }
 
-            // Truncate line if it's too long
-            let content = if line.content.len() > self.width as usize {
-                &line.content[..self.width as usize]
+            // Truncate line if it's too long (Unicode-safe)
+            let content = if line.content.chars().count() > self.width as usize {
+                line.content
+                    .chars()
+                    .take(self.width as usize)
+                    .collect::<String>()
             } else {
-                &line.content
+                line.content.clone()
             };
 
-            stdout.queue(Print(content))?;
+            stdout.queue(Print(&content))?;
 
             // Reset color if it was set
             if line.color.is_some() {

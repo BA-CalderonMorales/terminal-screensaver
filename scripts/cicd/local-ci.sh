@@ -17,7 +17,7 @@ NC='\033[0m' # No Color
 SKIP_TESTS=false
 SKIP_AUDIT=false
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
+PROJECT_ROOT="$(dirname "$(dirname "$SCRIPT_DIR")")"
 
 # Parse command line arguments
 while [[ $# -gt 0 ]]; do
