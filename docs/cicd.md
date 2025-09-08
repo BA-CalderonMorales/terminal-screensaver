@@ -2,17 +2,32 @@
 
 ## Pipeline Philosophy
 
-The terminal screensaver project implements a robust CI/CD pipeline that emphasizes quality, security, and reliability. The pipeline follows a multi-stage approach with comprehensive testing, security scanning, and automated deployment capabilities.
+The terminal screensaver project implements a robust CI/CD pipeline that emphasizes quality, security, and reliability. The core principle is **local-first development**: the same script (`local-ci.sh`) that developers run locally is executed in the CI environment, ensuring identical feedback and reducing CI surprises.
 
 ## Pipeline Architecture
 
 ### Scripts Organization
-All automation scripts are organized in the `scripts/` directory for better maintainability:
+All automation scripts are organized in the `scripts/cicd/` directory for better maintainability:
 
 ```
-scripts/
+scripts/cicd/
 ├── local-ci.sh         # Local Continuous Integration pipeline
 └── local-cd.sh         # Local Continuous Deployment pipeline
+```
+
+### GitHub Actions Integration
+Our `.github/workflows/ci.yml` implements a streamlined pipeline based on the `local-ci.sh` script:
+
+```
+cargo_check (base compilation check)
+├── local_ci (runs our local-ci.sh script)
+├── rustfmt (formatting check) 
+├── clippy (linting)
+└── test (cross-platform testing)
+    └── github_build (release builds, only on tags)
+        └── github_release (create releases)
+
+cargo_audit (runs independently for security)
 ```
 
 ### Local Development Pipeline

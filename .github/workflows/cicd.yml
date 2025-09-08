@@ -1,0 +1,203 @@
+name: Build
+
+on:
+
+  push:
+    paths-ignore:
+      - "docs/**"
+      - "**.md"
+      - "LICENSE"
+
+  pull_request:
+    branches: [ main ]
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+
+  # Ensure that the project could be successfully compiled
+  cargo_check:
+    name: Check Code Compiles
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions-rust-lang/setup-rust-toolchain@v1
+        with:
+          toolchain: stable
+          override: true
+      - run: cargo check --all
+
+  # Run the `rustfmt` code formatter (separate for clarity)
+  rustfmt:
+    name: Rustfmt [Formatter]
+    needs: cargo_check
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions-rust-lang/setup-rust-toolchain@v1
+        with:
+          toolchain: stable
+          components: rustfmt
+          override: true
+      - run: cargo fmt --all -- --check
+
+  # Run the `clippy` linting tool
+  clippy:
+    name: Clippy [Linter]
+    needs: cargo_check
+    runs-on: ubuntu-22.04
+    permissions:
+      checks: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions-rust-lang/setup-rust-toolchain@v1
+        with:
+          toolchain: stable
+          components: clippy
+          override: true
+      - run: cargo clippy --all-targets --all-features -- -D clippy::all
+
+  # Security audit
+  cargo_audit:
+    name: Cargo Audit [Security]
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions-rust-lang/audit@v1
+
+  # Cross-platform testing
+  test:
+    needs: [cargo_check, rustfmt, clippy]
+    name: Tests
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-22.04, windows-latest, macOS-latest]
+        rust: [stable]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions-rust-lang/setup-rust-toolchain@v1
+        with:
+          toolchain: ${{ matrix.rust }}
+          override: true
+      - run: cargo test
+      - name: Test binary execution
+        run: cargo run --release -- --help
+
+  # Build release binaries for multiple targets
+  github_build:
+    if: startsWith(github.ref, 'refs/tags/v')
+    name: Build release binaries
+    strategy:
+      matrix:
+        target:
+          - x86_64-unknown-linux-gnu
+          - x86_64-unknown-linux-musl
+          - x86_64-apple-darwin
+          - x86_64-pc-windows-msvc
+          - aarch64-unknown-linux-gnu
+          - aarch64-unknown-linux-musl
+          - aarch64-apple-darwin
+          - aarch64-pc-windows-msvc
+        include:
+          - target: x86_64-unknown-linux-gnu
+            os: ubuntu-22.04
+            name: terminal-screensaver-x86_64-unknown-linux-gnu.tar.gz
+          - target: x86_64-unknown-linux-musl
+            os: ubuntu-22.04
+            name: terminal-screensaver-x86_64-unknown-linux-musl.tar.gz
+          - target: x86_64-apple-darwin
+            os: macOS-latest
+            name: terminal-screensaver-x86_64-apple-darwin.tar.gz
+          - target: x86_64-pc-windows-msvc
+            os: windows-latest
+            name: terminal-screensaver-x86_64-pc-windows-msvc.zip
+          - target: aarch64-unknown-linux-gnu
+            os: ubuntu-22.04
+            name: terminal-screensaver-aarch64-unknown-linux-gnu.tar.gz
+          - target: aarch64-unknown-linux-musl
+            os: ubuntu-22.04
+            name: terminal-screensaver-aarch64-unknown-linux-musl.tar.gz
+          - target: aarch64-apple-darwin
+            os: macOS-latest
+            name: terminal-screensaver-aarch64-apple-darwin.tar.gz
+          - target: aarch64-pc-windows-msvc
+            os: windows-latest
+            name: terminal-screensaver-aarch64-pc-windows-msvc.zip
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build binary
+        uses: houseabsolute/actions-rust-cross@v1
+        with:
+          command: build
+          target: ${{ matrix.target }}
+          args: "--locked --release"
+          strip: true
+
+      - name: Prepare build artifacts [Windows]
+        if: matrix.os == 'windows-latest'
+        run: |
+          cd target/${{ matrix.target }}/release
+          7z a ../../../${{ matrix.name }} terminal-screensaver.exe
+          cd -
+
+      - name: Prepare build artifacts [-nix]
+        if: matrix.os != 'windows-latest'
+        run: |
+          cd target/${{ matrix.target }}/release
+          tar czvf ../../../${{ matrix.name }} terminal-screensaver
+          cd -
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.name }}
+          path: ${{ matrix.name }}
+
+  # Create GitHub release
+  github_release:
+    if: startsWith(github.ref, 'refs/tags/v')
+    name: Create GitHub Release
+    needs: [test, github_build, cargo_audit]
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download all release artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: terminal-screensaver-*
+          merge-multiple: true
+
+      - name: Generate checksums
+        run: for file in terminal-screensaver-*; do openssl dgst -sha256 -r "$file" > "${file}.sha256"; done
+
+      - name: Create GitHub release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            terminal-screensaver-*.tar.gz
+            terminal-screensaver-*.zip
+            terminal-screensaver-*.sha256
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  # Publish to crates.io
+  cargo_publish:
+    needs: [test, cargo_audit]
+    if: startsWith(github.ref, 'refs/tags/v')
+    name: Publish Cargo Package
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions-rust-lang/setup-rust-toolchain@v1
+        with:
+          toolchain: stable
+          override: true
+      - run: cargo login $CRATES_IO_TOKEN
+      - run: cargo publish
+    env:
+      CRATES_IO_TOKEN: ${{ secrets.CRATES_IO_TOKEN }}
