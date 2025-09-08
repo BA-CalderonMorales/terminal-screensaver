@@ -1,4 +1,4 @@
-use terminal_screensaver::{cli, feature_alpha, logger};
+use terminal_screensaver::{cli, features};
 
 fn main() {
     // Initialize logger
@@ -7,6 +7,6 @@ fn main() {
     // Parse CLI arguments
     let config = cli::cli_logic::parse_args();
 
-    // Run the screen saver
-    feature_alpha::feature_alpha_logic::run_screensaver(config);
+    // Run the screen saver - using text_display feature by default
+    features::text_display::text_display_logic::run_screensaver(config);
 }

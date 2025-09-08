@@ -6,23 +6,32 @@
 //! # Examples
 //!
 //! ```rust
-//! use terminal_screensaver::{Config, run_screensaver};
+//! use terminal_screensaver::Config;
 //!
 //! let config = Config {
 //!     text: "Welcome to My App".to_string(),
 //!     style: "default".to_string(),
 //! };
 //!
-//! // This will show a screen saver until ESC is pressed
-//! run_screensaver(config);
+//! // Config is available for use with screensaver features
+//! assert_eq!(config.text, "Welcome to My App");
 //! ```
 
 pub mod cli;
-pub mod feature_alpha;
+pub mod features;
 pub mod logger;
 pub mod shared;
 pub mod styles;
 
 // Re-export commonly used items
 pub use cli::cli_logic::Config;
-pub use feature_alpha::feature_alpha_logic::run_screensaver;
+pub use features::{
+    get_available_features,
+    get_feature_description,
+    // Temporarily disabled complex features
+    // TextDisplayFeature, MatrixRainFeature, ClockDisplayFeature,
+    // SystemInfoFeature, WaveAnimationFeature, StarfieldFeature,
+    BouncingLogoFeature,
+    ScreensaverAction,
+    ScreensaverFeature,
+};

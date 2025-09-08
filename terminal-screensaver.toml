@@ -1,2 +1,68 @@
+# Terminal Screensaver Configuration
+# This file configures the behavior and appearance of the terminal screensaver
+
+[screensaver]
+# The default screensaver feature to display
+# Available options: "text_display", "matrix_rain", "clock_display", "bouncing_logo", 
+#                   "system_info", "wave_animation", "starfield"
+# Default: "text_display"
+default_feature = "text_display"
+
+# Screensaver timeout in seconds (0 to disable timeout)
+# Range: 0-86400 (24 hours)
+# Default: 60
+timeout_seconds = 60
+
+# Feature-specific configuration
+[features.text_display]
+# Enable or disable this feature
+enabled = true
+# Custom text to display in the screensaver
 text = "Welcome to Terminal Screensaver v0.0.1"
+# Text style/animation type
 style = "default"
+
+[features.matrix_rain]
+enabled = true
+# Character set for the rain effect
+charset = "katakana"  # Options: "katakana", "ascii", "numbers"
+# Rain speed (1-10)
+speed = 5
+
+[features.clock_display]
+enabled = true
+# Clock format: "12hour", "24hour", "unix"
+format = "24hour"
+# Show seconds
+show_seconds = true
+
+[features.bouncing_logo]
+enabled = true
+# Text to bounce around the screen
+text = "TERMINAL SCREENSAVER"
+# Bounce speed (1-10)
+speed = 3
+
+[features.system_info]
+enabled = true
+# Update interval in seconds
+update_interval = 5
+
+[features.wave_animation]
+enabled = true
+# Animation speed (0.1-5.0)
+speed = 1.0
+# Wave amplitude (1-15)
+amplitude = 8
+
+[features.starfield]
+enabled = true
+# Number of stars (25-200)
+star_count = 100
+# Movement speed (0.1-5.0)
+speed = 1.0
+
+# Custom actions that can be triggered from the screensaver
+# These are handled by the host application
+[custom_actions]
+# example_action = "custom_command_to_run"
