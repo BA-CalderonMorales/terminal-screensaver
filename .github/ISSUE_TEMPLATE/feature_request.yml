@@ -1,0 +1,120 @@
+name: Feature Request
+description: Suggest a new feature for Terminal Screensaver
+title: "[Feature]: "
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        **IMPORTANT: This project has a strict NO EMOJIS policy. Please do not use emojis in your feature request.**
+        
+        Thank you for suggesting a new feature! Please fill out the form below to help us understand your request.
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Feature Description
+      description: A clear and concise description of the feature you'd like to see (text only, no emojis).
+      placeholder: I would like to see...
+    validations:
+      required: true
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem or Use Case
+      description: What problem does this feature solve? What use case does it address?
+      placeholder: This feature would help with...
+    validations:
+      required: true
+
+  - type: textarea
+    id: solution
+    attributes:
+      label: Proposed Solution
+      description: How do you envision this feature working?
+      placeholder: I think this could work by...
+    validations:
+      required: true
+
+  - type: dropdown
+    id: category
+    attributes:
+      label: Feature Category
+      description: Which area of the project does this feature relate to?
+      options:
+        - Core Screensaver Engine
+        - New Screensaver Feature/Animation
+        - CLI Interface
+        - Configuration System
+        - Plugin Architecture
+        - Performance Improvement
+        - Documentation
+        - Testing
+        - Other
+    validations:
+      required: true
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Priority Level
+      description: How important is this feature to you?
+      options:
+        - Low - Nice to have
+        - Medium - Would be helpful
+        - High - Important for my use case
+        - Critical - Blocking my usage
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives Considered
+      description: What other approaches or workarounds have you considered?
+      placeholder: I also considered...
+    validations:
+      required: false
+
+  - type: textarea
+    id: examples
+    attributes:
+      label: Examples or Mockups
+      description: If applicable, provide examples of how this feature might look or work
+      placeholder: For example, the configuration might look like...
+    validations:
+      required: false
+
+  - type: textarea
+    id: implementation
+    attributes:
+      label: Implementation Ideas
+      description: If you have ideas about how this could be implemented, share them here
+      placeholder: This could be implemented by...
+    validations:
+      required: false
+
+  - type: textarea
+    id: additional-context
+    attributes:
+      label: Additional Context
+      description: Any other context or information about the feature request
+      placeholder: Additional information...
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: Checklist
+      description: Please confirm the following
+      options:
+        - label: I have searched existing issues to avoid duplicates
+          required: true
+        - label: I have provided a clear description of the feature
+          required: true
+        - label: I have not used any emojis in this feature request
+          required: true
+        - label: This feature aligns with the project's plugin architecture goals
+          required: false

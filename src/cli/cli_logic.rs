@@ -16,7 +16,10 @@ pub fn parse_args() -> Config {
         )
         .get_matches();
 
-    let config_path = matches.get_one::<String>("config").map(|s| s.as_str()).unwrap_or("terminal-screensaver.toml");
+    let config_path = matches
+        .get_one::<String>("config")
+        .map(|s| s.as_str())
+        .unwrap_or("terminal-screensaver.toml");
     load_config(config_path)
 }
 
