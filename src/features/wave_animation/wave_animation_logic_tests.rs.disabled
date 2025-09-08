@@ -1,0 +1,68 @@
+#[cfg(test)]
+mod wave_animation_tests {
+    use super::*;
+
+    #[test]
+    fn test_wave_animation_creation() {
+        let feature = WaveAnimationFeature::new();
+        assert_eq!(feature.time, 0.0);
+        assert_eq!(feature.speed, 0.1);
+        assert_eq!(feature.amplitude, 8.0);
+        assert_eq!(feature.frequency, 0.3);
+        assert_eq!(feature.wave_chars.len(), 7);
+    }
+
+    #[test]
+    fn test_handle_escape_key() {
+        let mut feature = WaveAnimationFeature::new();
+        let action = feature.handle_input(KeyEvent::from(KeyCode::Esc));
+        assert_eq!(action, ScreensaverAction::Exit);
+    }
+
+    #[test]
+    fn test_handle_space_key_changes_parameters() {
+        let mut feature = WaveAnimationFeature::new();
+        let initial_speed = feature.speed;
+        let initial_frequency = feature.frequency;
+        let initial_amplitude = feature.amplitude;
+
+        let action = feature.handle_input(KeyEvent::from(KeyCode::Char(' ')));
+        assert_eq!(action, ScreensaverAction::Continue);
+
+        // Parameters should have changed
+        assert_ne!(feature.speed, initial_speed);
+        assert_ne!(feature.frequency, initial_frequency);
+        assert_ne!(feature.amplitude, initial_amplitude);
+    }
+
+    #[test]
+    fn test_speed_adjustment() {
+        let mut feature = WaveAnimationFeature::new();
+        let initial_speed = feature.speed;
+
+        // Increase speed
+        feature.handle_input(KeyEvent::from(KeyCode::Char('+')));
+        assert!(feature.speed > initial_speed);
+
+        // Decrease speed
+        feature.handle_input(KeyEvent::from(KeyCode::Char('-')));
+        assert!(feature.speed < initial_speed + 0.01);
+    }
+
+    #[test]
+    fn test_center_text() {
+        assert_eq!(center_text("test", 10), "   test");
+        assert_eq!(center_text("hello", 10), "  hello");
+        assert_eq!(center_text("toolongtext", 5), "toolongtext");
+    }
+
+    #[test]
+    fn test_render_produces_lines() {
+        let mut feature = WaveAnimationFeature::new();
+        let area = Rect::new(0, 0, 40, 20);
+        let lines = feature.render(area);
+
+        assert!(!lines.is_empty());
+        assert!(lines.len() <= area.height as usize);
+    }
+}

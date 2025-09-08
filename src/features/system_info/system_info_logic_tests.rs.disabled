@@ -1,0 +1,41 @@
+#[cfg(test)]
+mod system_info_tests {
+    use super::*;
+
+    #[test]
+    fn test_system_info_creation() {
+        let feature = SystemInfoFeature::new();
+        assert_eq!(feature.content.len(), 0);
+        assert_eq!(feature.update_interval, 5);
+    }
+
+    #[test]
+    fn test_handle_escape_key() {
+        let mut feature = SystemInfoFeature::new();
+        let action = feature.handle_input(KeyEvent::from(KeyCode::Esc));
+        assert_eq!(action, ScreensaverAction::Exit);
+    }
+
+    #[test]
+    fn test_handle_refresh_key() {
+        let mut feature = SystemInfoFeature::new();
+        feature.last_update = 1000;
+        let action = feature.handle_input(KeyEvent::from(KeyCode::Char('r')));
+        assert_eq!(action, ScreensaverAction::Continue);
+        assert_eq!(feature.last_update, 0); // Should reset for refresh
+    }
+
+    #[test]
+    fn test_format_timestamp() {
+        assert_eq!(format_timestamp(3661), "01:01:01 UTC");
+        assert_eq!(format_timestamp(0), "00:00:00 UTC");
+        assert_eq!(format_timestamp(3600), "01:00:00 UTC");
+    }
+
+    #[test]
+    fn test_format_two_digits() {
+        assert_eq!(format_two_digits(5), "05");
+        assert_eq!(format_two_digits(15), "15");
+        assert_eq!(format_two_digits(0), "00");
+    }
+}

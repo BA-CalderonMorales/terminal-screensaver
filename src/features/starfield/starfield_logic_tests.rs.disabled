@@ -1,0 +1,83 @@
+#[cfg(test)]
+mod starfield_tests {
+    use super::*;
+
+    #[test]
+    fn test_starfield_creation() {
+        let feature = StarfieldFeature::new();
+        assert_eq!(feature.star_count, 100);
+        assert_eq!(feature.speed, 1.0);
+        assert_eq!(feature.area_width, 80);
+        assert_eq!(feature.area_height, 24);
+    }
+
+    #[test]
+    fn test_handle_escape_key() {
+        let mut feature = StarfieldFeature::new();
+        let action = feature.handle_input(KeyEvent::from(KeyCode::Esc));
+        assert_eq!(action, ScreensaverAction::Exit);
+    }
+
+    #[test]
+    fn test_speed_adjustment() {
+        let mut feature = StarfieldFeature::new();
+        let initial_speed = feature.speed;
+
+        // Increase speed
+        feature.handle_input(KeyEvent::from(KeyCode::Char('+')));
+        assert!(feature.speed > initial_speed);
+
+        // Decrease speed
+        feature.handle_input(KeyEvent::from(KeyCode::Char('-')));
+        assert!(feature.speed < initial_speed + 0.2);
+
+        // Test limits
+        for _ in 0..20 {
+            feature.handle_input(KeyEvent::from(KeyCode::Char('+')));
+        }
+        assert!(feature.speed <= 5.0);
+
+        for _ in 0..20 {
+            feature.handle_input(KeyEvent::from(KeyCode::Char('-')));
+        }
+        assert!(feature.speed >= 0.1);
+    }
+
+    #[test]
+    fn test_star_count_change() {
+        let mut feature = StarfieldFeature::new();
+        let initial_count = feature.star_count;
+
+        feature.handle_input(KeyEvent::from(KeyCode::Char('s')));
+        assert_ne!(feature.star_count, initial_count);
+    }
+
+    #[test]
+    fn test_center_text() {
+        assert_eq!(center_text("test", 10), "   test");
+        assert_eq!(center_text("hello world", 8), "hello world");
+    }
+
+    #[test]
+    fn test_resize_updates_dimensions() {
+        let mut feature = StarfieldFeature::new();
+        let new_area = Rect::new(0, 0, 120, 40);
+
+        feature.resize(new_area);
+        assert_eq!(feature.area_width, 120);
+        assert_eq!(feature.area_height, 40);
+    }
+
+    #[test]
+    fn test_star_initialization() {
+        let mut feature = StarfieldFeature::new();
+        feature.initialize_stars();
+
+        assert_eq!(feature.stars.len(), feature.star_count);
+
+        for star in &feature.stars {
+            assert!(star.z > 0.0);
+            assert!(star.z <= 21.0); // Max initial Z + 1
+        }
+    }
+}

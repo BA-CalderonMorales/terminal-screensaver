@@ -115,10 +115,10 @@ run_step "Checking code formatting" "cargo fmt --all -- --check"
 run_step "Running Clippy lints" "cargo clippy --all-targets --all-features -- -D warnings"
 
 # 6. Build the project
-run_step "Building project (debug)" "cargo build"
+run_step "Building project (debug)" "RUSTFLAGS='-D warnings' cargo build"
 
 # 7. Build the project in release mode
-run_step "Building project (release)" "cargo build --release"
+run_step "Building project (release)" "RUSTFLAGS='-D warnings' cargo build --release"
 
 # 8. Run tests (if not skipped)
 if [[ "$SKIP_TESTS" == "false" ]]; then
@@ -137,7 +137,16 @@ run_step "Checking documentation" "cargo doc --no-deps --document-private-items"
 if [[ "$SKIP_AUDIT" == "false" ]]; then
     # Check if cargo-audit is installed
     if command -v cargo-audit &> /dev/null; then
-        run_step "Running security audit" "cargo audit"
+        run_step "Running security audit" "cargo audit --deny warnings --ignore RUSTSEC-2024-0436"
+        
+        # Generate security report as specified in security.md
+        print_step "Generating security audit report"
+        if cargo audit --json > security-audit-report.json 2>/dev/null; then
+            print_success "Security audit report generated: security-audit-report.json"
+        else
+            print_warning "Could not generate JSON security report"
+        fi
+        echo
     else
         print_warning "cargo-audit not installed. Install with: cargo install cargo-audit"
         print_warning "Skipping security audit"
