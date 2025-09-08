@@ -69,7 +69,7 @@ jobs:
 
   # Cross-platform testing
   test:
-    needs: [cargo_check, rustfmt, clippy]
+    needs: [cargo_check, rustfmt, clippy, cargo_audit]
     name: Tests
     runs-on: ${{ matrix.os }}
     strategy:
