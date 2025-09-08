@@ -26,7 +26,7 @@ For detailed feature documentation, see **[Features Guide](docs/features.md)**.
 
 ```bash
 # Clone and build
-git clone https://github.com/yourusername/terminal-screensaver.git
+git clone https://github.com/BA-CalderonMorales/terminal-screensaver.git
 cd terminal-screensaver
 cargo build --release
 
@@ -79,6 +79,14 @@ For detailed control information, see **[Controls & Keyboard Shortcuts](docs/con
 | **[Frontend](docs/frontend.md)** | Frontend and styling guide |
 | **[CI/CD](docs/cicd.md)** | Continuous integration and deployment |
 | **[Documentation](docs/documentation.md)** | Documentation standards and guidelines |
+
+## Support the Project
+
+If Terminal Screensaver has been helpful for your development workflow or you appreciate the plugin architecture approach, consider supporting the project:
+
+[![Buy Me a Coffee](https://img.shields.io/badge/☕-Buy%20Me%20a%20Coffee-orange.svg?style=for-the-badge)](https://www.buymeacoffee.com/brandoncalderonmorales)
+
+Your support helps maintain and improve Terminal Screensaver for the entire community!
 
 ## License
 
