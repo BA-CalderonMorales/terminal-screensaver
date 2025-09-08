@@ -27,6 +27,15 @@ pub fn parse_args() -> Config {
 pub struct Config {
     pub text: String,
     pub style: String,
+    #[serde(default)]
+    pub actions: Vec<ActionConfig>,
+}
+
+#[derive(Debug, Deserialize, Clone)]
+pub struct ActionConfig {
+    pub key: String,
+    pub description: String,
+    pub command: String,
 }
 
 fn load_config(path: &str) -> Config {
@@ -38,6 +47,7 @@ fn load_config(path: &str) -> Config {
         Config {
             text: "Welcome to Terminal Screensaver".to_string(),
             style: "default".to_string(),
+            actions: Vec::new(),
         }
     } else {
         toml::from_str(&content).unwrap_or_else(|e| {
@@ -45,6 +55,7 @@ fn load_config(path: &str) -> Config {
             Config {
                 text: "Welcome to Terminal Screensaver".to_string(),
                 style: "default".to_string(),
+                actions: Vec::new(),
             }
         })
     }
