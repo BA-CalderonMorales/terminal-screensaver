@@ -1,0 +1,27 @@
+[package]
+name = "terminal-screensaver"
+version = "0.0.1"
+edition = "2021"
+authors = ["Your Name <your.email@example.com>"]
+description = "A dynamic terminal screen saver crate with plugin architecture"
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/yourusername/terminal-screensaver"
+keywords = ["terminal", "screensaver", "rust", "plugin", "tui"]
+categories = ["command-line-utilities"]
+
+[lib]
+name = "terminal_screensaver"
+path = "src/lib.rs"
+
+[[bin]]
+name = "terminal-screensaver"
+path = "src/main.rs"
+
+[dependencies]
+crossterm = "0.29.0"
+ratatui = "0.29.0"
+serde = { version = "1.0.219", features = ["derive"] }
+toml = "0.9.5"
+log = "0.4.28"
+simplelog = "0.12.2"
+clap = "4.5.47"
