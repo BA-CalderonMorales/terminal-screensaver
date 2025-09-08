@@ -6,7 +6,7 @@
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/terminal-screensaver.git
+git clone https://github.com/BA-CalderonMorales/terminal-screensaver.git
 cd terminal-screensaver
 
 # Build and run

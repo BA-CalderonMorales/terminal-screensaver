@@ -20,12 +20,12 @@ This project adheres to a professional, inclusive environment focused on technic
 1. Fork the repository on GitHub
 2. Clone your fork locally:
    ```bash
-   git clone https://github.com/yourusername/terminal-screensaver.git
+   git clone https://github.com/BA-CalderonMorales/terminal-screensaver.git
    cd terminal-screensaver
    ```
 3. Add the upstream remote:
    ```bash
-   git remote add upstream https://github.com/yourusername/terminal-screensaver.git
+   git remote add upstream https://github.com/BA-CalderonMorales/terminal-screensaver.git
    ```
 4. Install dependencies and test the build:
    ```bash

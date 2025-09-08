@@ -312,9 +312,9 @@ cargo install terminal-screensaver
 
 ## Documentation
 
-- [README](https://github.com/yourusername/terminal-screensaver/blob/v$VERSION/README.md)
-- [Documentation](https://docs.rs/terminal-screensaver/$VERSION/)
-- [Examples](https://github.com/yourusername/terminal-screensaver/tree/v$VERSION/examples)
+- [README](https://github.com/BA-CalderonMorales/terminal-screensaver/blob/v$VERSION/README.md)
+- [Documentation](https://github.com/BA-CalderonMorales/terminal-screensaver/tree/v$VERSION/docs)
+- [Examples](https://github.com/BA-CalderonMorales/terminal-screensaver/tree/v$VERSION/examples)
 
 ## Changes
 
@@ -322,7 +322,7 @@ $(git log --oneline --pretty=format:"- %s" $(git describe --tags --abbrev=0 HEAD
 
 ---
 
-**Full Changelog**: https://github.com/yourusername/terminal-screensaver/compare/$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo "initial")...v$VERSION
+**Full Changelog**: https://github.com/BA-CalderonMorales/terminal-screensaver/compare/$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo "initial")...v$VERSION
 EOF
     print_success "Release notes generated: $RELEASE_NOTES_FILE"
 else
