@@ -6,12 +6,29 @@ The terminal screensaver project implements a robust CI/CD pipeline that emphasi
 
 ## Pipeline Architecture
 
+### Scripts Organization
+All automation scripts are organized in the `scripts/` directory for better maintainability:
+
+```
+scripts/
+├── local-ci.sh         # Local Continuous Integration pipeline
+└── local-cd.sh         # Local Continuous Deployment pipeline
+```
+
 ### Local Development Pipeline
 The foundation of our CI/CD strategy begins with local development tooling:
 
 ```bash
 # Local CI script - comprehensive quality gates
-./local-ci.sh [--skip-tests] [--skip-audit] [--help]
+./scripts/local-ci.sh [--skip-tests] [--skip-audit] [--help]
+```
+
+### Local Deployment Pipeline
+For release management and crate publishing:
+
+```bash
+# Local CD script - release management
+./scripts/local-cd.sh [--version VERSION] [--dry-run] [--help]
 ```
 
 #### Local CI Stages
@@ -22,11 +39,35 @@ The foundation of our CI/CD strategy begins with local development tooling:
 5. **Security Audit**: Dependency vulnerability scanning
 6. **Documentation**: Doc generation and validation
 
+#### Local CD Stages
+1. **Pre-flight Checks**: Git repository validation and clean working directory
+2. **CI Pipeline**: Runs complete local-ci.sh pipeline
+3. **Version Management**: Updates Cargo.toml and version constants
+4. **Package Verification**: Cargo package dry run and content review
+5. **Crates.io Validation**: Checks if version already exists
+6. **Git Operations**: Commits version changes and creates tags
+7. **Publication**: Publishes to crates.io with verification
+8. **Post-release**: Generates release notes and pushes to repository
+
+**Local CD Usage Examples:**
+```bash
+# Test release process without publishing
+./scripts/local-cd.sh --version 0.0.1 --dry-run
+
+# Release version 0.0.1 to crates.io
+./scripts/local-cd.sh --version 0.0.1
+
+# Get help with CD options
+./scripts/local-cd.sh --help
+```
+
 ### Repository CI/CD Flow
+
+The CI/CD pipeline builds upon the local scripts foundation:
 
 ```mermaid
 graph TD
-    A[Push/PR] --> B[Local CI Validation]
+    A[Push/PR] --> B[Local CI Validation - scripts/local-ci.sh]
     B --> C[GitHub Actions Trigger]
     C --> D[Multi-Platform Build]
     D --> E[Test Matrix Execution]
@@ -36,11 +77,16 @@ graph TD
     H --> I{All Checks Pass?}
     I -->|Yes| J[Merge/Deploy]
     I -->|No| K[Block & Notify]
-    J --> L[Release Pipeline]
+    J --> L[Release Pipeline - scripts/local-cd.sh]
     L --> M[Cargo Publish]
     L --> N[GitHub Release]
     L --> O[Documentation Deploy]
 ```
+
+**Integration with Local Scripts:**
+- GitHub Actions workflows can invoke `scripts/local-ci.sh` for consistency
+- Release workflows can leverage `scripts/local-cd.sh` logic
+- Local and CI environments maintain parity
 
 ## GitHub Actions Workflows
 
@@ -105,7 +151,37 @@ Automated release pipeline:
 - GitHub release creation
 - Documentation updates
 
-## Build Configuration
+### Crate Publishing Process
+
+#### Prerequisites for Publishing
+1. **Crates.io Token**: Configure authentication token in `.env` or environment
+2. **Git Repository**: Clean working directory on main branch (or specified branch)
+3. **CI Validation**: All local-ci.sh checks must pass
+4. **Version Increment**: Semantic versioning (MAJOR.MINOR.PATCH)
+
+#### Publishing Workflow
+```bash
+# 1. Run local CI to ensure quality
+./scripts/local-ci.sh
+
+# 2. Test release process (recommended)
+./scripts/local-cd.sh --version 0.0.1 --dry-run
+
+# 3. Publish to crates.io
+./scripts/local-cd.sh --version 0.0.1
+```
+
+#### Version Management
+The local-cd.sh script handles:
+- **Cargo.toml**: Updates version field
+- **src/lib.rs**: Updates VERSION constant (if present)
+- **Git Tags**: Creates annotated version tags
+- **Commit History**: Maintains clean version history
+
+#### Post-Publication Verification
+- **Crates.io API**: Validates successful publication
+- **Documentation**: Verifies docs.rs generation
+- **Download Test**: Confirms installability via `cargo install`
 
 ### Cargo Configuration
 **File**: `.cargo/config.toml`
