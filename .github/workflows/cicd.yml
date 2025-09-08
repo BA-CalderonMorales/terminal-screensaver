@@ -45,7 +45,7 @@ jobs:
   # Run the `clippy` linting tool
   clippy:
     name: Clippy [Linter]
-    needs: cargo_check
+    needs: [cargo_check, rustfmt]
     runs-on: ubuntu-22.04
     permissions:
       checks: write
@@ -61,6 +61,7 @@ jobs:
   # Security audit
   cargo_audit:
     name: Cargo Audit [Security]
+    needs: [cargo_check, rustfmt, clippy]
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
@@ -88,6 +89,7 @@ jobs:
   # Build release binaries for multiple targets
   github_build:
     if: startsWith(github.ref, 'refs/tags/v')
+    needs: [cargo_check, rustfmt, clippy, test]
     name: Build release binaries
     strategy:
       matrix:
@@ -161,7 +163,7 @@ jobs:
   github_release:
     if: startsWith(github.ref, 'refs/tags/v')
     name: Create GitHub Release
-    needs: [test, github_build, cargo_audit]
+    needs: [cargo_check, rustfmt, clippy, test, github_build]
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
@@ -187,7 +189,7 @@ jobs:
 
   # Publish to crates.io
   cargo_publish:
-    needs: [test, cargo_audit]
+    needs: [cargo_check, rustfmt, clippy, test, github_build, github_release]
     if: startsWith(github.ref, 'refs/tags/v')
     name: Publish Cargo Package
     runs-on: ubuntu-22.04
