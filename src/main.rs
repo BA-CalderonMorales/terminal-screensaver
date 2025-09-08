@@ -1,4 +1,4 @@
-use terminal_screensaver::{logger, cli, feature_alpha};
+use terminal_screensaver::{cli, feature_alpha, logger};
 
 fn main() {
     // Initialize logger

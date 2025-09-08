@@ -2,10 +2,10 @@
 name = "terminal-screensaver"
 version = "0.0.1"
 edition = "2021"
-authors = ["Your Name <your.email@example.com>"]
+authors = ["BA-CalderonMorales <your.email@example.com>"]
 description = "A dynamic terminal screen saver crate with plugin architecture"
 license = "MIT OR Apache-2.0"
-repository = "https://github.com/yourusername/terminal-screensaver"
+repository = "https://github.com/BA-CalderonMorales/terminal-screensaver"
 keywords = ["terminal", "screensaver", "rust", "plugin", "tui"]
 categories = ["command-line-utilities"]
 
