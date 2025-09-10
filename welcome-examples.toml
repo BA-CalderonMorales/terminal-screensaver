@@ -1,0 +1,44 @@
+# Terminal Screensaver - Complete Welcome Message Configuration Examples
+# This file shows all available welcome message styling options
+
+# EXAMPLE 1: Simple text (default, backward compatible)
+# text = "Welcome to Terminal Screensaver"
+# style = "default"
+
+# EXAMPLE 2: Built-in ASCII art
+# [welcome_message]
+# text = "HELLO"
+# style = "ascii"
+# provider = "builtin"
+
+# EXAMPLE 3: Enhanced with Oh My Logo (if available)
+[welcome_message]
+text = "TERMINAL"
+style = "enhanced"
+provider = "ohmylogo"
+
+# The system will automatically fall back to builtin if Oh My Logo is not available
+# Supported styles:
+# - "simple": Plain text display (default)
+# - "ascii": ASCII art using built-in patterns  
+# - "enhanced": Advanced ASCII art with gradients (requires Oh My Logo)
+#
+# Supported providers:
+# - "builtin": Use built-in ASCII generation (always available)
+# - "ohmylogo": Use Oh My Logo npm package (falls back to builtin if not available)
+
+# Actions remain the same as before
+[[actions]]
+key = "d"
+description = "Development Status"
+command = "./scripts/demo/dev-status.sh"
+
+[[actions]]
+key = "g"  
+description = "Git Quick Actions"
+command = "./scripts/demo/git-quick.sh"
+
+[[actions]]
+key = "h"
+description = "Show Help"
+command = "./scripts/demo/help.sh"
