@@ -1,0 +1,8 @@
+# Test configuration for enhanced welcome message
+text = "CODE"
+style = "enhanced"
+
+[welcome_message]
+text = "CODE"
+style = "enhanced"
+provider = "ohmylogo"
