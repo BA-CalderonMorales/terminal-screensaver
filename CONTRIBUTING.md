@@ -49,20 +49,20 @@ This project adheres to a professional, inclusive environment focused on technic
 
 #### Examples of INCORRECT Usage:
 ```
-❌ "Add cool feature 🚀"
-❌ "Fix bug 🐛 in screensaver"
-❌ "Update docs 📚"
-❌ println!("Welcome! 👋");
-❌ // TODO: Make this faster ⚡
+WRONG: "Add cool feature [rocket emoji]"
+WRONG: "Fix bug [bug emoji] in screensaver"
+WRONG: "Update docs [books emoji]"
+WRONG: println!("Welcome! [wave emoji]");
+WRONG: // TODO: Make this faster [lightning emoji]
 ```
 
 #### Examples of CORRECT Usage:
 ```
-✓ "Add dynamic screen resizing feature"
-✓ "Fix rendering bug in alpha feature"
-✓ "Update documentation for CLI interface"
-✓ println!("Welcome to Terminal Screensaver");
-✓ // TODO: Optimize rendering performance
+CORRECT: "Add dynamic screen resizing feature"
+CORRECT: "Fix rendering bug in alpha feature"
+CORRECT: "Update documentation for CLI interface"
+CORRECT: println!("Welcome to Terminal Screensaver");
+CORRECT: // TODO: Optimize rendering performance
 ```
 
 #### Pull Request Review Process:

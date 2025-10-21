@@ -159,11 +159,11 @@ Example output:
 Terminal Screensaver Doctor Report
 ================================
 
-✓ Terminal compatibility: PASSED
-✓ Color support: 256 colors detected
-✓ Configuration file: Valid
-⚠ Performance: Consider reducing animation speed for better performance
-✗ Dependencies: cargo-audit not found (optional)
+[OK] Terminal compatibility: PASSED
+[OK] Color support: 256 colors detected
+[OK] Configuration file: Valid
+[WARN] Performance: Consider reducing animation speed for better performance
+[FAIL] Dependencies: cargo-audit not found (optional)
 
 Overall Status: GOOD (1 warning, 1 optional issue)
 ```

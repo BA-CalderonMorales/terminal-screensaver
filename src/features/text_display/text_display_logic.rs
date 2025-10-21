@@ -30,7 +30,7 @@ pub fn run_screensaver(config: Config) {
                         execute_action_menu(&config.actions);
                         shared::clear_screen();
                     } else {
-                        log::info!("Enter pressed, but no actions configured");
+                        crate::log_info!("Enter pressed, but no actions configured");
                     }
                 }
                 KeyCode::Char(c) => {
@@ -55,7 +55,7 @@ pub fn run_screensaver(config: Config) {
 fn execute_script(command: &str) {
     disable_raw_mode().unwrap();
 
-    log::info!("Executing script: {}", command);
+    crate::log_info!("Executing script: {}", command);
 
     // Clear screen, move cursor to top, and ensure output is flushed
     print!("\x1b[2J\x1b[1;1H");
@@ -72,13 +72,13 @@ fn execute_script(command: &str) {
     match status {
         Ok(exit_status) => {
             if exit_status.success() {
-                log::info!("Script executed successfully");
+                crate::log_info!("Script executed successfully");
             } else {
-                log::error!("Script execution failed with status: {}", exit_status);
+                crate::log_error!("Script execution failed with status: {}", exit_status);
             }
         }
         Err(e) => {
-            log::error!("Failed to execute script: {}", e);
+            crate::log_error!("Failed to execute script: {}", e);
             println!("Error executing script: {}", e);
         }
     }

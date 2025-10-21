@@ -57,19 +57,19 @@ print_step() {
 }
 
 print_success() {
-    echo -e "${GREEN}✓${NC} $1"
+    echo -e "${GREEN}[OK]${NC} $1"
 }
 
 print_warning() {
-    echo -e "${YELLOW}⚠${NC} $1"
+    echo -e "${YELLOW}[WARN]${NC} $1"
 }
 
 print_error() {
-    echo -e "${RED}✗${NC} $1"
+    echo -e "${RED}[FAIL]${NC} $1"
 }
 
 print_info() {
-    echo -e "${PURPLE}ℹ${NC} $1"
+    echo -e "${PURPLE}[INFO]${NC} $1"
 }
 
 run_step() {

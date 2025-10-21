@@ -385,11 +385,11 @@ open coverage/tarpaulin-report.html
 
 ### Pre-commit Requirements
 All tests must pass:
-- Unit tests: ✓
-- Integration tests: ✓
+- Unit tests: PASS
+- Integration tests: PASS
 - Performance benchmarks: Within thresholds
 - Security audit: No vulnerabilities
-- Documentation tests: ✓
+- Documentation tests: PASS
 
 ### Release Requirements
 Additional requirements for releases:

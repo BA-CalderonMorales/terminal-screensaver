@@ -84,7 +84,7 @@ For detailed control information, see **[Controls & Keyboard Shortcuts](docs/con
 
 If Terminal Screensaver has been helpful for your development workflow or you appreciate the plugin architecture approach, consider supporting the project:
 
-[![Buy Me a Coffee](https://img.shields.io/badge/☕-Buy%20Me%20a%20Coffee-orange.svg?style=for-the-badge)](https://www.buymeacoffee.com/brandoncalderonmorales)
+[![Buy Me a Coffee](https://img.shields.io/badge/Buy%20Me%20a%20Coffee-orange.svg?style=for-the-badge)](https://www.buymeacoffee.com/brandoncalderonmorales)
 
 Your support helps maintain and improve Terminal Screensaver for the entire community!
 

@@ -40,7 +40,7 @@ pub struct ActionConfig {
 
 fn load_config(path: &str) -> Config {
     let content = std::fs::read_to_string(path).unwrap_or_else(|_| {
-        log::warn!("Config file not found, using defaults");
+        crate::log_warn!("Config file not found, using defaults");
         "".to_string()
     });
     if content.is_empty() {
@@ -51,7 +51,7 @@ fn load_config(path: &str) -> Config {
         }
     } else {
         toml::from_str(&content).unwrap_or_else(|e| {
-            log::error!("Failed to parse config: {}", e);
+            crate::log_error!("Failed to parse config: {}", e);
             Config {
                 text: "Welcome to Terminal Screensaver".to_string(),
                 style: "default".to_string(),

@@ -176,7 +176,7 @@ pub fn run_screensaver(config: Config) -> io::Result<()> {
                 match code {
                     KeyCode::Esc => break,
                     KeyCode::Enter => {
-                        log::info!("Enter pressed in matrix_rain screensaver, triggering additional options");
+                        crate::log_info!("Enter pressed in matrix_rain screensaver, triggering additional options");
                     }
                     _ => {}
                 }
