@@ -19,6 +19,7 @@
 //! ```
 
 pub mod cli;
+pub mod error;
 pub mod features;
 pub mod logger;
 pub mod shared;
@@ -26,13 +27,8 @@ pub mod styles;
 
 // Re-export commonly used items
 pub use cli::cli_logic::Config;
+pub use error::{Result, ScreensaverError};
 pub use features::{
-    get_available_features,
-    get_feature_description,
-    // Temporarily disabled complex features
-    // TextDisplayFeature, MatrixRainFeature, ClockDisplayFeature,
-    // SystemInfoFeature, WaveAnimationFeature, StarfieldFeature,
-    BouncingLogoFeature,
-    ScreensaverAction,
+    get_available_features, get_feature_description, BouncingLogoFeature, ScreensaverAction,
     ScreensaverFeature,
 };

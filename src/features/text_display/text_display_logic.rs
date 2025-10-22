@@ -1,4 +1,5 @@
 use crate::cli::cli_logic::{ActionConfig, Config};
+use crate::error::{Result, ScreensaverError};
 use crate::shared::shared_logic as shared;
 use crate::shared::{SimpleRenderer, TextLine};
 use crossterm::event::{read, Event, KeyCode, KeyEvent};
@@ -7,53 +8,81 @@ use crossterm::terminal::{disable_raw_mode, enable_raw_mode};
 use std::io::Read;
 use std::process::Command;
 
-pub fn run_screensaver(config: Config) {
-    enable_raw_mode().unwrap();
-    let mut renderer = SimpleRenderer::new().unwrap();
-    let show_help = true; // Help always visible
-    shared::clear_screen();
+pub fn run_screensaver(config: Config) -> Result<()> {
+    enable_raw_mode()
+        .map_err(|e| ScreensaverError::Terminal(format!("Failed to enable raw mode: {}", e)))?;
 
+    let mut renderer = SimpleRenderer::new()
+        .map_err(|e| ScreensaverError::Render(format!("Failed to create renderer: {}", e)))?;
+
+    let show_help = true; // Help always visible
+    shared::clear_screen()?;
+
+    let result = run_screensaver_loop(&config, &mut renderer, show_help);
+
+    // Always try to disable raw mode, even if there was an error
+    let _ = disable_raw_mode();
+
+    result
+}
+
+fn run_screensaver_loop(
+    config: &Config,
+    renderer: &mut SimpleRenderer,
+    show_help: bool,
+) -> Result<()> {
     loop {
-        renderer.update_size().unwrap();
+        renderer.update_size()
+            .map_err(|e| ScreensaverError::Render(format!("Failed to update size: {}", e)))?;
+
         let (width, height) = renderer.get_size();
 
         // Create text display with optional help
         let lines = create_text_display(&config.text, &config.actions, width, height, show_help);
-        renderer.render_lines(lines).unwrap();
 
-        if let Event::Key(KeyEvent { code, .. }) = read().unwrap() {
-            match code {
-                KeyCode::Esc => break,
-                KeyCode::Enter => {
-                    // Show action menu if actions are available
-                    if !config.actions.is_empty() {
-                        execute_action_menu(&config.actions);
-                        shared::clear_screen();
-                    } else {
-                        crate::log_info!("Enter pressed, but no actions configured");
+        renderer.render_lines(lines)
+            .map_err(|e| ScreensaverError::Render(format!("Failed to render lines: {}", e)))?;
+
+        match read() {
+            Ok(Event::Key(KeyEvent { code, .. })) => {
+                match code {
+                    KeyCode::Esc => break,
+                    KeyCode::Enter => {
+                        // Show action menu if actions are available
+                        if !config.actions.is_empty() {
+                            execute_action_menu(&config.actions)?;
+                            shared::clear_screen()?;
+                        } else {
+                            crate::log_info!("Enter pressed, but no actions configured");
+                        }
                     }
-                }
-                KeyCode::Char(c) => {
-                    // Check if this character matches any configured action key
-                    if let Some(action) = config
-                        .actions
-                        .iter()
-                        .find(|a| a.key.to_lowercase() == c.to_string().to_lowercase())
-                    {
-                        execute_script(&action.command);
-                        shared::clear_screen();
+                    KeyCode::Char(c) => {
+                        // Check if this character matches any configured action key
+                        if let Some(action) = config
+                            .actions
+                            .iter()
+                            .find(|a| a.key.to_lowercase() == c.to_string().to_lowercase())
+                        {
+                            execute_script(&action.command)?;
+                            shared::clear_screen()?;
+                        }
                     }
+                    _ => {}
                 }
-                _ => {}
             }
+            Err(e) => {
+                return Err(ScreensaverError::Terminal(format!("Failed to read input: {}", e)));
+            }
+            _ => {}
         }
     }
 
-    disable_raw_mode().unwrap();
+    Ok(())
 }
 
-fn execute_script(command: &str) {
-    disable_raw_mode().unwrap();
+fn execute_script(command: &str) -> Result<()> {
+    disable_raw_mode()
+        .map_err(|e| ScreensaverError::Terminal(format!("Failed to disable raw mode: {}", e)))?;
 
     crate::log_info!("Executing script: {}", command);
 
@@ -90,11 +119,15 @@ fn execute_script(command: &str) {
 
     print!("\x1b[?25l"); // Hide cursor again
 
-    enable_raw_mode().unwrap();
+    enable_raw_mode()
+        .map_err(|e| ScreensaverError::Terminal(format!("Failed to re-enable raw mode: {}", e)))?;
+
+    Ok(())
 }
 
-fn execute_action_menu(actions: &[ActionConfig]) {
-    disable_raw_mode().unwrap();
+fn execute_action_menu(actions: &[ActionConfig]) -> Result<()> {
+    disable_raw_mode()
+        .map_err(|e| ScreensaverError::Terminal(format!("Failed to disable raw mode: {}", e)))?;
 
     println!("\n=== Available Actions ===");
     for (i, action) in actions.iter().enumerate() {
@@ -105,7 +138,10 @@ fn execute_action_menu(actions: &[ActionConfig]) {
     println!("\nPress any key to continue...");
     let _ = std::io::Read::read(&mut std::io::stdin(), &mut [0u8; 1]);
 
-    enable_raw_mode().unwrap();
+    enable_raw_mode()
+        .map_err(|e| ScreensaverError::Terminal(format!("Failed to re-enable raw mode: {}", e)))?;
+
+    Ok(())
 }
 
 fn create_text_display(
@@ -200,38 +236,51 @@ fn create_text_display(
 
             if text.len() < available_width {
                 let padding = (available_width - text.len()) / 2;
-                let main_text = format!("{}{}", " ".repeat(padding), text);
-
-                // Combine main text with help panel if both exist
-                if is_help_area {
-                    // Ensure main text doesn't overlap with help
-                    let safe_text_len = std::cmp::min(main_text.len(), help_start_x as usize - 1);
-                    if safe_text_len > 0 {
-                        line_content = format!(
-                            "{}{}",
-                            &main_text[..safe_text_len],
-                            &line_content[safe_text_len..]
-                        );
-                    }
-                    // Keep help color for the help portion
-                } else {
-                    line_content = main_text;
-                    line_color = Some(Color::Green);
-                }
+                line_content = format!("{}{}", " ".repeat(padding), text);
+                line_color = Some(Color::Green);
+            } else {
+                line_content = text[..available_width].to_string();
+                line_color = Some(Color::Green);
             }
         }
 
-        // Create the TextLine
-        if line_content.is_empty() {
-            lines.push(TextLine::new(String::new()));
+        lines.push(if let Some(color) = line_color {
+            TextLine::with_color(line_content, color)
         } else {
-            lines.push(if let Some(color) = line_color {
-                TextLine::with_color(line_content, color)
-            } else {
-                TextLine::new(line_content)
-            });
-        }
+            TextLine::new(line_content)
+        });
     }
 
     lines
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_create_text_display_basic() {
+        let actions = vec![];
+        let lines = create_text_display("Test", &actions, 80, 24, false);
+        assert_eq!(lines.len(), 24);
+    }
+
+    #[test]
+    fn test_create_text_display_with_help() {
+        let actions = vec![ActionConfig {
+            key: "h".to_string(),
+            description: "Help".to_string(),
+            command: "echo help".to_string(),
+        }];
+        let lines = create_text_display("Test", &actions, 80, 24, true);
+        assert_eq!(lines.len(), 24);
+    }
+
+    #[test]
+    fn test_create_text_display_centering() {
+        let actions = vec![];
+        let lines = create_text_display("Test", &actions, 80, 24, false);
+        let center_line = &lines[12]; // height / 2
+        assert!(center_line.content.contains("Test"));
+    }
 }

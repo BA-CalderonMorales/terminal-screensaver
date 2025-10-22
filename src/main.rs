@@ -8,5 +8,8 @@ fn main() {
     let config = cli::cli_logic::parse_args();
 
     // Run the screen saver - using text_display feature by default
-    features::text_display::text_display_logic::run_screensaver(config);
+    if let Err(e) = features::text_display::text_display_logic::run_screensaver(config) {
+        eprintln!("Error running screensaver: {}", e);
+        std::process::exit(1);
+    }
 }
