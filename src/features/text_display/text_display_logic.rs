@@ -1,5 +1,6 @@
 use crate::cli::cli_logic::{ActionConfig, Config};
 use crate::error::{Result, ScreensaverError};
+use crate::services::welcome_message::{WelcomeMessageService, WelcomeMessageConfig, WelcomeStyle, WelcomeProvider};
 use crate::shared::shared_logic as shared;
 use crate::shared::{SimpleRenderer, TextLine};
 use crossterm::event::{read, Event, KeyCode, KeyEvent};
@@ -18,7 +19,29 @@ pub fn run_screensaver(config: Config) -> Result<()> {
     let show_help = true; // Help always visible
     shared::clear_screen()?;
 
-    let result = run_screensaver_loop(&config, &mut renderer, show_help);
+    // Generate the welcome message using the service
+    let display_text = if let Some(ref welcome_config) = config.welcome_message {
+        match WelcomeMessageService::generate_message(welcome_config) {
+            Ok(generated_text) => generated_text,
+            Err(e) => {
+                crate::log_warn!("Failed to generate welcome message: {}, using fallback", e);
+                config.text.clone()
+            }
+        }
+    } else {
+        // Backward compatibility: check if we should auto-upgrade simple text to enhanced
+        if should_auto_enhance(&config.text, &config.style) {
+            let auto_config = create_auto_config(&config.text, &config.style);
+            match WelcomeMessageService::generate_message(&auto_config) {
+                Ok(generated_text) => generated_text,
+                Err(_) => config.text.clone(),
+            }
+        } else {
+            config.text.clone()
+        }
+    };
+
+    let result = run_screensaver_loop(&config, &mut renderer, show_help, &display_text);
 
     // Always try to disable raw mode, even if there was an error
     let _ = disable_raw_mode();
@@ -30,6 +53,7 @@ fn run_screensaver_loop(
     config: &Config,
     renderer: &mut SimpleRenderer,
     show_help: bool,
+    display_text: &str,
 ) -> Result<()> {
     loop {
         renderer.update_size()
@@ -38,7 +62,7 @@ fn run_screensaver_loop(
         let (width, height) = renderer.get_size();
 
         // Create text display with optional help
-        let lines = create_text_display(&config.text, &config.actions, width, height, show_help);
+        let lines = create_text_display(display_text, &config.actions, width, height, show_help);
 
         renderer.render_lines(lines)
             .map_err(|e| ScreensaverError::Render(format!("Failed to render lines: {}", e)))?;
@@ -234,13 +258,34 @@ fn create_text_display(
                 width as usize
             };
 
-            if text.len() < available_width {
-                let padding = (available_width - text.len()) / 2;
-                line_content = format!("{}{}", " ".repeat(padding), text);
-                line_color = Some(Color::Green);
-            } else {
-                line_content = text[..available_width].to_string();
-                line_color = Some(Color::Green);
+            // Handle multi-line text (split by newlines for ASCII art)
+            let text_lines: Vec<&str> = text.lines().collect();
+            let line_offset = (height / 2).saturating_sub((text_lines.len() / 2) as u16);
+
+            if !text_lines.is_empty() && y >= line_offset && y < line_offset + text_lines.len() as u16 {
+                let text_line_idx = (y - line_offset) as usize;
+                if let Some(text_line) = text_lines.get(text_line_idx) {
+                    if text_line.len() < available_width {
+                        let padding = (available_width - text_line.len()) / 2;
+                        let main_text = format!("{}{}", " ".repeat(padding), text_line);
+
+                        // Combine main text with help panel if both exist
+                        if is_help_area {
+                            // Ensure main text doesn't overlap with help
+                            let safe_text_len = std::cmp::min(main_text.len(), help_start_x as usize - 1);
+                            if safe_text_len > 0 {
+                                line_content = format!(
+                                    "{}{}",
+                                    &main_text[..safe_text_len],
+                                    &line_content[safe_text_len..]
+                                );
+                            }
+                        } else {
+                            line_content = main_text;
+                            line_color = Some(Color::Green);
+                        }
+                    }
+                }
             }
         }
 
@@ -252,6 +297,38 @@ fn create_text_display(
     }
 
     lines
+}
+
+/// Check if text should be auto-enhanced based on style
+fn should_auto_enhance(text: &str, style: &str) -> bool {
+    // Auto-enhance if style suggests enhanced formatting or if text is all caps and short
+    style == "enhanced" || style == "ascii" ||
+    (text.len() <= 20 && text.chars().all(|c| c.is_uppercase() || c.is_whitespace()))
+}
+
+/// Create auto-configuration for backward compatibility
+fn create_auto_config(text: &str, style: &str) -> WelcomeMessageConfig {
+    let welcome_style = match style {
+        "enhanced" => WelcomeStyle::Enhanced,
+        "ascii" => WelcomeStyle::Ascii,
+        _ => if text.len() <= 20 && text.chars().all(|c| c.is_uppercase() || c.is_whitespace()) {
+            WelcomeStyle::Ascii
+        } else {
+            WelcomeStyle::Simple
+        }
+    };
+
+    let provider = if WelcomeMessageService::is_oh_my_logo_available() {
+        WelcomeProvider::OhMyLogo
+    } else {
+        WelcomeProvider::Builtin
+    };
+
+    WelcomeMessageConfig {
+        text: text.to_string(),
+        style: welcome_style,
+        provider,
+    }
 }
 
 #[cfg(test)]
@@ -282,5 +359,20 @@ mod tests {
         let lines = create_text_display("Test", &actions, 80, 24, false);
         let center_line = &lines[12]; // height / 2
         assert!(center_line.content.contains("Test"));
+    }
+
+    #[test]
+    fn test_should_auto_enhance() {
+        assert!(should_auto_enhance("TEST", "ascii"));
+        assert!(should_auto_enhance("HELLO", "enhanced"));
+        assert!(should_auto_enhance("SHORT", "default"));
+        assert!(!should_auto_enhance("this is a longer text", "default"));
+    }
+
+    #[test]
+    fn test_create_auto_config() {
+        let config = create_auto_config("TEST", "ascii");
+        assert_eq!(config.text, "TEST");
+        matches!(config.style, WelcomeStyle::Ascii);
     }
 }

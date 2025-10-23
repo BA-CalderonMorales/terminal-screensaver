@@ -22,6 +22,7 @@ pub mod cli;
 pub mod error;
 pub mod features;
 pub mod logger;
+pub mod services;
 pub mod shared;
 pub mod styles;
 
