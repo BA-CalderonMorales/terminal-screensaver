@@ -29,6 +29,9 @@ pub struct Config {
     pub style: String,
     #[serde(default)]
     pub actions: Vec<ActionConfig>,
+    /// Enhanced welcome message configuration (optional)
+    #[serde(default)]
+    pub welcome_message: Option<crate::services::welcome_message::WelcomeMessageConfig>,
 }
 
 #[derive(Debug, Deserialize, Clone)]
@@ -48,6 +51,7 @@ fn load_config(path: &str) -> Config {
             text: "Welcome to Terminal Screensaver".to_string(),
             style: "default".to_string(),
             actions: Vec::new(),
+            welcome_message: None,
         }
     } else {
         toml::from_str(&content).unwrap_or_else(|e| {
@@ -56,6 +60,7 @@ fn load_config(path: &str) -> Config {
                 text: "Welcome to Terminal Screensaver".to_string(),
                 style: "default".to_string(),
                 actions: Vec::new(),
+                welcome_message: None,
             }
         })
     }
