@@ -2,6 +2,17 @@
 
 A dynamic terminal screen saver crate with plugin architecture that automatically resizes with any screen size.
 
+## Table of Contents
+
+- [Demo](#demo)
+- [Features](#features)
+- [Quick Start](#quick-start)
+- [Configuration](#configuration)
+- [Controls](#controls)
+- [Documentation](#documentation)
+- [Support the Project](#support-the-project)
+- [License](#license)
+
 ## Demo
 
 <div style="border-radius: 8px; overflow: hidden; display: inline-block;">
