@@ -13,6 +13,9 @@ A dynamic terminal screen saver crate with plugin architecture that automaticall
 - [Support the Project](#support-the-project)
 - [License](#license)
 
+
+> *Note: If these links do not respond in the GitHub Mobile app, try viewing in a browser. This is a known platform limitation.*
+
 ## Demo
 
 <div style="border-radius: 8px; overflow: hidden; display: inline-block;">
