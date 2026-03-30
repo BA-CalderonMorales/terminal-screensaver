@@ -1,4 +1,5 @@
 use crate::cli::cli_logic::{ActionConfig, Config};
+use crate::services::welcome_message::{WelcomeMessageService, WelcomeMessageConfig, WelcomeStyle, WelcomeProvider};
 use crate::shared::shared_logic as shared;
 use crate::shared::{SimpleRenderer, TextLine};
 use crossterm::event::{read, Event, KeyCode, KeyEvent};
@@ -13,12 +14,34 @@ pub fn run_screensaver(config: Config) {
     let show_help = true; // Help always visible
     shared::clear_screen();
 
+    // Generate the welcome message using the service
+    let display_text = if let Some(ref welcome_config) = config.welcome_message {
+        match WelcomeMessageService::generate_message(welcome_config) {
+            Ok(generated_text) => generated_text,
+            Err(e) => {
+                log::warn!("Failed to generate welcome message: {}, using fallback", e);
+                config.text.clone()
+            }
+        }
+    } else {
+        // Backward compatibility: check if we should auto-upgrade simple text to enhanced
+        if should_auto_enhance(&config.text, &config.style) {
+            let auto_config = create_auto_config(&config.text, &config.style);
+            match WelcomeMessageService::generate_message(&auto_config) {
+                Ok(generated_text) => generated_text,
+                Err(_) => config.text.clone(),
+            }
+        } else {
+            config.text.clone()
+        }
+    };
+
     loop {
         renderer.update_size().unwrap();
         let (width, height) = renderer.get_size();
 
         // Create text display with optional help
-        let lines = create_text_display(&config.text, &config.actions, width, height, show_help);
+        let lines = create_text_display(&display_text, &config.actions, width, height, show_help);
         renderer.render_lines(lines).unwrap();
 
         if let Event::Key(KeyEvent { code, .. }) = read().unwrap() {
@@ -189,34 +212,96 @@ fn create_text_display(
             }
         }
 
-        // Add main text content (centered)
-        if y == height / 2 {
-            // Center the main text horizontally, but avoid help area
-            let available_width = if help_start_x > 0 && show_help {
-                help_start_x as usize - 2
-            } else {
-                width as usize
-            };
+        // Add main text content (centered) - handle both single line and ASCII art
+        let text_lines: Vec<&str> = text.split('\n').collect();
+        
+        // Check if this is ASCII art (multiple lines with significant width)
+        let is_ascii_art = text_lines.len() > 1 && 
+                          text_lines.iter().any(|line| line.len() > 20);
+        
+        if is_ascii_art {
+            // For ASCII art, use a different layout strategy
+            let text_height = text_lines.len();
+            let text_start_y = (height as usize).saturating_sub(text_height) / 2;
+            
+            if y >= text_start_y as u16 && y < (text_start_y + text_height) as u16 {
+                let text_line_index = y as usize - text_start_y;
+                if text_line_index < text_lines.len() {
+                    let current_text_line = text_lines[text_line_index].trim_end();
+                    
+                    // For ASCII art, don't compete with help panel - use full width or hide help
+                    if show_help && current_text_line.len() > (width as usize * 2 / 3) {
+                        // ASCII art is too wide, just center it and skip help on this line
+                        if !is_help_area {
+                            let available_width = width as usize;
+                            if current_text_line.len() < available_width {
+                                let padding = (available_width - current_text_line.len()) / 2;
+                                line_content = format!("{}{}", " ".repeat(padding), current_text_line);
+                                line_color = Some(Color::Green);
+                            } else {
+                                // Line too long, just show it without padding
+                                line_content = current_text_line.to_string();
+                                line_color = Some(Color::Green);
+                            }
+                        }
+                    } else {
+                        // ASCII art fits with help panel
+                        let available_width = if help_start_x > 0 && show_help {
+                            help_start_x as usize - 2
+                        } else {
+                            width as usize
+                        };
 
-            if text.len() < available_width {
-                let padding = (available_width - text.len()) / 2;
-                let main_text = format!("{}{}", " ".repeat(padding), text);
+                        if current_text_line.len() < available_width {
+                            let padding = (available_width - current_text_line.len()) / 2;
+                            let main_text = format!("{}{}", " ".repeat(padding), current_text_line);
 
-                // Combine main text with help panel if both exist
-                if is_help_area {
-                    // Ensure main text doesn't overlap with help
-                    let safe_text_len = std::cmp::min(main_text.len(), help_start_x as usize - 1);
-                    if safe_text_len > 0 {
-                        line_content = format!(
-                            "{}{}",
-                            &main_text[..safe_text_len],
-                            &line_content[safe_text_len..]
-                        );
+                            if is_help_area {
+                                // Combine with help panel
+                                let safe_text_len = std::cmp::min(main_text.len(), help_start_x as usize - 1);
+                                if safe_text_len > 0 {
+                                    line_content = format!(
+                                        "{}{}",
+                                        &main_text[..safe_text_len],
+                                        &line_content[safe_text_len..]
+                                    );
+                                }
+                            } else {
+                                line_content = main_text;
+                                line_color = Some(Color::Green);
+                            }
+                        }
                     }
-                    // Keep help color for the help portion
+                }
+            }
+        } else {
+            // Single line text - use original simple layout
+            if y == height / 2 {
+                let current_text_line = text_lines.get(0).unwrap_or(&"");
+                
+                let available_width = if help_start_x > 0 && show_help {
+                    help_start_x as usize - 2
                 } else {
-                    line_content = main_text;
-                    line_color = Some(Color::Green);
+                    width as usize
+                };
+
+                if current_text_line.len() < available_width {
+                    let padding = (available_width - current_text_line.len()) / 2;
+                    let main_text = format!("{}{}", " ".repeat(padding), current_text_line);
+
+                    if is_help_area {
+                        let safe_text_len = std::cmp::min(main_text.len(), help_start_x as usize - 1);
+                        if safe_text_len > 0 {
+                            line_content = format!(
+                                "{}{}",
+                                &main_text[..safe_text_len],
+                                &line_content[safe_text_len..]
+                            );
+                        }
+                    } else {
+                        line_content = main_text;
+                        line_color = Some(Color::Green);
+                    }
                 }
             }
         }
@@ -234,4 +319,36 @@ fn create_text_display(
     }
 
     lines
+}
+
+/// Check if text should be auto-enhanced based on style
+fn should_auto_enhance(text: &str, style: &str) -> bool {
+    // Auto-enhance if style suggests enhanced formatting or if text is all caps and short
+    style == "enhanced" || style == "ascii" || 
+    (text.len() <= 20 && text.chars().all(|c| c.is_uppercase() || c.is_whitespace()))
+}
+
+/// Create auto-configuration for backward compatibility
+fn create_auto_config(text: &str, style: &str) -> WelcomeMessageConfig {
+    let welcome_style = match style {
+        "enhanced" => WelcomeStyle::Enhanced,
+        "ascii" => WelcomeStyle::Ascii,
+        _ => if text.len() <= 20 && text.chars().all(|c| c.is_uppercase() || c.is_whitespace()) {
+            WelcomeStyle::Ascii
+        } else {
+            WelcomeStyle::Simple
+        }
+    };
+
+    let provider = if WelcomeMessageService::is_oh_my_logo_available() {
+        WelcomeProvider::OhMyLogo
+    } else {
+        WelcomeProvider::Builtin
+    };
+
+    WelcomeMessageConfig {
+        text: text.to_string(),
+        style: welcome_style,
+        provider,
+    }
 }
