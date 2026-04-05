@@ -42,6 +42,13 @@ The Terminal Screensaver project is a Rust-based cargo package designed to provi
 - Input validation on all user interactions
 - Secure defaults for all configuration options
 
+## Working Rules
+
+- If a prompt would require a major architectural deviation, stop and explain before proceeding.
+- Keep changes and milestones separated into distinct commits.
+- After each change or milestone, commit and push before starting the next one.
+- Do not bundle unrelated work from different prompts into the same commit.
+
 ## Getting Started for Agents
 
 When working on this project:
