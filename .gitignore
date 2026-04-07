@@ -5,3 +5,5 @@
 .vscode/
 .idea/
 .env
+# Temporary files folder - never commit
+tmp/
