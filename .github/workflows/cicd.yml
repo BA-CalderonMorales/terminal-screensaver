@@ -69,9 +69,18 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions-rust-lang/audit@v1
 
+  # Secret scanning
+  gitleaks:
+    name: Gitleaks [Secrets]
+    needs: [cargo_check, rustfmt, clippy]
+    uses: BA-CalderonMorales/.github/.github/workflows/security-scan.yml@2ac88022e38caaaff37f13c2ffbbc62720c9e280
+    secrets: inherit
+    permissions:
+      contents: read
+
   # Cross-platform testing
   test:
-    needs: [cargo_check, rustfmt, clippy, cargo_audit]
+    needs: [cargo_check, rustfmt, clippy, cargo_audit, gitleaks]
     name: Tests
     runs-on: ${{ matrix.os }}
     strategy:
@@ -91,7 +100,7 @@ jobs:
   # Build release binaries for multiple targets
   github_build:
     if: startsWith(github.ref, 'refs/tags/v')
-    needs: [cargo_check, rustfmt, clippy, test]
+    needs: [cargo_check, rustfmt, clippy, test, gitleaks]
     name: Build release binaries
     strategy:
       matrix:
